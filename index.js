@@ -191,10 +191,63 @@ function createUi() {
     board.addEventListener('pointerleave', cancelLongPress);
 
     makeFloatingButtonDraggable(root.querySelector('#stcm-floating-button'));
+    makeGameWindowDraggable(root.querySelector('.stcm-titlebar'), root.querySelector('#stcm-window'));
     window.addEventListener('resize', () => {
         placeFloatingButton();
+        keepGameWindowInViewport();
         updateCellSize();
     }, { passive: true });
+}
+
+function makeGameWindowDraggable(handle, gameWindow) {
+    let drag = null;
+
+    handle.addEventListener('pointerdown', event => {
+        if (event.button !== 0 || event.target.closest('button')) return;
+        const rect = gameWindow.getBoundingClientRect();
+        drag = {
+            pointerId: event.pointerId,
+            offsetX: event.clientX - rect.left,
+            offsetY: event.clientY - rect.top,
+        };
+        gameWindow.style.left = `${rect.left}px`;
+        gameWindow.style.top = `${rect.top}px`;
+        gameWindow.style.transform = 'none';
+        handle.setPointerCapture(event.pointerId);
+        event.preventDefault();
+    });
+
+    handle.addEventListener('pointermove', event => {
+        if (!drag || drag.pointerId !== event.pointerId) return;
+        const rect = gameWindow.getBoundingClientRect();
+        const maxLeft = Math.max(4, window.innerWidth - rect.width - 4);
+        const maxTop = Math.max(4, window.innerHeight - rect.height - 4);
+        gameWindow.style.left = `${Math.min(Math.max(4, event.clientX - drag.offsetX), maxLeft)}px`;
+        gameWindow.style.top = `${Math.min(Math.max(4, event.clientY - drag.offsetY), maxTop)}px`;
+    });
+
+    const finishDrag = event => {
+        if (!drag || drag.pointerId !== event.pointerId) return;
+        drag = null;
+    };
+    handle.addEventListener('pointerup', finishDrag);
+    handle.addEventListener('pointercancel', finishDrag);
+}
+
+function keepGameWindowInViewport() {
+    const gameWindow = document.getElementById('stcm-window');
+    if (!gameWindow || gameWindow.hidden) return;
+    const rect = gameWindow.getBoundingClientRect();
+    const alreadyInside = rect.left >= 4
+        && rect.top >= 4
+        && rect.right <= window.innerWidth - 4
+        && rect.bottom <= window.innerHeight - 4;
+    if (alreadyInside && gameWindow.style.transform !== 'none') return;
+    const maxLeft = Math.max(4, window.innerWidth - rect.width - 4);
+    const maxTop = Math.max(4, window.innerHeight - rect.height - 4);
+    gameWindow.style.transform = 'none';
+    gameWindow.style.left = `${Math.min(Math.max(4, rect.left), maxLeft)}px`;
+    gameWindow.style.top = `${Math.min(Math.max(4, rect.top), maxTop)}px`;
 }
 
 function makeFloatingButtonDraggable(button) {
@@ -277,6 +330,7 @@ function openPanel() {
     resumeTimer();
     updateCellSize();
     renderAll();
+    keepGameWindowInViewport();
 }
 
 function closePanel() {
@@ -326,8 +380,9 @@ function updateCellSize() {
     if (!game) return;
     const board = document.getElementById('stcm-board');
     if (!board) return;
-    const available = Math.max(280, Math.min(window.innerWidth - 18, 680));
-    const maximum = game.columns === 9 ? 30 : 24;
+    const compact = window.matchMedia('(pointer: coarse)').matches || window.innerWidth <= 700;
+    const available = Math.max(260, Math.min(window.innerWidth - 30, 680));
+    const maximum = compact ? (game.columns === 9 ? 26 : 21) : (game.columns === 9 ? 30 : 24);
     const minimum = game.columns === 9 ? 24 : 18;
     const size = Math.max(minimum, Math.min(maximum, Math.floor((available - 18) / game.columns)));
     board.style.setProperty('--stcm-cell-size', `${size}px`);

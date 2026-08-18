@@ -43,16 +43,16 @@
     right: 16px;
     bottom: 96px;
     z-index: 5100;
-    width: 48px;
-    height: 48px;
+    width: 18px;
+    height: 18px;
     padding: 0;
-    border: 2px outset var(--stcm-light);
+    border: 1px outset var(--stcm-light);
     border-right-color: var(--stcm-dark);
     border-bottom-color: var(--stcm-dark);
-    border-radius: 7px;
+    border-radius: 4px;
     background: var(--stcm-background);
     color: var(--stcm-text);
-    font-size: 24px;
+    font-size: 10px;
     line-height: 1;
     box-shadow: 0 3px 10px rgb(0 0 0 / 30%);
     cursor: grab;
@@ -101,6 +101,8 @@
     color: #ffffff;
     font-size: 14px;
     user-select: none;
+    touch-action: none;
+    cursor: move;
 }
 
 #stcm-root[data-theme="inherit"] .stcm-titlebar,
@@ -292,33 +294,86 @@
     margin-top: 7px;
 }
 
-.stcm-settings .inline-drawer-content {
+#stcm-settings,
+#stcm-settings * {
+    box-sizing: border-box;
+    writing-mode: horizontal-tb;
+}
+
+#stcm-settings {
+    width: 100%;
+    font-size: 14px;
+    line-height: 1.4;
+}
+
+#stcm-settings .inline-drawer-content {
     display: flex;
     flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+    width: 100%;
+}
+
+#stcm-settings label,
+#stcm-settings span,
+#stcm-settings small {
+    width: auto;
+    max-width: 100%;
+    font-size: inherit;
+    line-height: inherit;
+    word-break: keep-all;
+}
+
+#stcm-settings .checkbox_label {
+    display: flex;
+    align-items: center;
     gap: 8px;
 }
 
-.stcm-settings-row {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px;
+#stcm-settings #stcm-theme-select {
+    display: block;
+    width: 100%;
+    min-height: 34px;
+    font-size: 14px;
 }
 
-.stcm-color-grid {
+#stcm-settings .stcm-settings-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+    width: 100%;
+}
+
+#stcm-settings .stcm-settings-row > button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: auto;
+    min-width: max-content;
+    min-height: 34px;
+    padding: 5px 10px;
+    font-size: 14px;
+    line-height: 1.25;
+    white-space: nowrap;
+    word-break: keep-all;
+}
+
+#stcm-settings .stcm-color-grid {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 6px 10px;
     margin: 8px 0;
 }
 
-.stcm-color-field {
+#stcm-settings .stcm-color-field {
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 8px;
 }
 
-.stcm-color-field input[type="color"] {
+#stcm-settings .stcm-color-field input[type="color"] {
     width: 42px;
     height: 28px;
     padding: 1px;
@@ -326,9 +381,9 @@
 
 @media (pointer: coarse), (max-width: 700px) {
     #stcm-floating-button {
-        width: 52px;
-        height: 52px;
-        font-size: 25px;
+        width: 18px;
+        height: 18px;
+        font-size: 10px;
     }
 
     #stcm-window {
@@ -355,7 +410,7 @@
         display: grid;
     }
 
-    .stcm-color-grid {
+    #stcm-settings .stcm-color-grid {
         grid-template-columns: 1fr;
     }
 }
