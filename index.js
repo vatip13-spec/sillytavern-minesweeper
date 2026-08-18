@@ -4,7 +4,6 @@ import { ARGUMENT_TYPE, SlashCommandArgument } from '../../../slash-commands/Sla
 import { CELL_STATE, GAME_STATUS, MinesweeperGame } from './game.js';
 
 const MODULE_NAME = 'st_classic_minesweeper';
-const EXTENSION_FOLDER = 'third-party/ST-Classic-Minesweeper';
 
 const DIFFICULTIES = Object.freeze({
     beginner: Object.freeze({ label: '초급', rows: 9, columns: 9, mines: 10 }),
@@ -56,6 +55,40 @@ const DEFAULT_SETTINGS = Object.freeze({
     floatingPosition: null,
     customThemes: [],
 });
+
+const SETTINGS_TEMPLATE = `
+<div id="stcm-settings" class="stcm-settings">
+    <div class="inline-drawer">
+        <div class="inline-drawer-toggle inline-drawer-header">
+            <b>💣 Classic Minesweeper</b>
+            <div class="inline-drawer-icon fa-solid fa-circle-chevron-down down"></div>
+        </div>
+        <div class="inline-drawer-content">
+            <label class="checkbox_label" for="stcm-show-floating">
+                <input id="stcm-show-floating" type="checkbox">
+                <span>플로팅 버튼 표시</span>
+            </label>
+            <label for="stcm-theme-select">테마</label>
+            <select id="stcm-theme-select" class="text_pole"></select>
+            <div id="stcm-custom-toolbar" class="stcm-settings-row">
+                <button id="stcm-theme-new" class="menu_button" type="button">새 테마</button>
+                <button id="stcm-theme-copy" class="menu_button" type="button">복제</button>
+                <button id="stcm-theme-delete" class="menu_button" type="button">삭제</button>
+            </div>
+            <div id="stcm-custom-editor" hidden>
+                <label for="stcm-theme-name">테마 이름</label>
+                <input id="stcm-theme-name" class="text_pole" type="text" maxlength="40">
+                <div id="stcm-color-grid" class="stcm-color-grid"></div>
+            </div>
+            <div class="stcm-settings-row">
+                <button id="stcm-theme-export" class="menu_button" type="button">테마 내보내기</button>
+                <button id="stcm-theme-import" class="menu_button" type="button">테마 불러오기</button>
+                <input id="stcm-theme-file" type="file" accept="application/json,.json" hidden>
+            </div>
+            <small>게임 열기: <code>/minesweeper</code> 또는 <code>/ms</code></small>
+        </div>
+    </div>
+</div>`;
 
 let settings;
 let initialized = false;
@@ -504,13 +537,11 @@ function applyTheme() {
     for (const [key, value] of Object.entries(custom.colors)) root.style.setProperty(`--stcm-${key}`, value);
 }
 
-async function createSettingsUi() {
+function createSettingsUi() {
     if (document.getElementById('stcm-settings')) return;
-    const { renderExtensionTemplateAsync } = context();
-    const html = await renderExtensionTemplateAsync(EXTENSION_FOLDER, 'settings');
     const host = document.getElementById('extensions_settings2') ?? document.getElementById('extensions_settings');
     if (!host) return;
-    host.insertAdjacentHTML('beforeend', html);
+    host.insertAdjacentHTML('beforeend', SETTINGS_TEMPLATE);
     bindSettingsUi();
     renderSettingsUi();
 }
@@ -701,11 +732,7 @@ async function initialize() {
     startNewGame(settings.difficulty);
     applyTheme();
     placeFloatingButton();
-    try {
-        await createSettingsUi();
-    } catch (error) {
-        console.error('[Classic Minesweeper] Failed to create settings UI.', error);
-    }
+    createSettingsUi();
 }
 
 export function onActivate() {
