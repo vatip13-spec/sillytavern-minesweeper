@@ -198,11 +198,40 @@ function createUi() {
 
     makeFloatingButtonDraggable(floatingButton);
     makeGameWindowDraggable(root.querySelector('.stcm-titlebar'), root.querySelector('#stcm-window'));
-    window.addEventListener('resize', () => {
+    const handleViewportChange = () => {
         placeFloatingButton();
         keepGameWindowInViewport();
         updateCellSize();
-    }, { passive: true });
+    };
+    window.addEventListener('resize', handleViewportChange, { passive: true });
+    window.visualViewport?.addEventListener('resize', handleViewportChange, { passive: true });
+    window.visualViewport?.addEventListener('scroll', handleViewportChange, { passive: true });
+}
+
+function getVisibleViewport() {
+    const viewport = window.visualViewport;
+    return {
+        left: viewport?.offsetLeft ?? 0,
+        top: viewport?.offsetTop ?? 0,
+        width: Math.max(1, viewport?.width ?? window.innerWidth),
+        height: Math.max(1, viewport?.height ?? window.innerHeight),
+    };
+}
+
+function getFloatingBounds(button) {
+    const viewport = getVisibleViewport();
+    const rect = button.getBoundingClientRect();
+    const width = rect.width || button.offsetWidth || 24;
+    const height = rect.height || button.offsetHeight || 24;
+    const margin = 8;
+    return {
+        minLeft: viewport.left + margin,
+        minTop: viewport.top + margin,
+        maxLeft: Math.max(viewport.left + margin, viewport.left + viewport.width - width - margin),
+        maxTop: Math.max(viewport.top + margin, viewport.top + viewport.height - height - margin),
+        width,
+        height,
+    };
 }
 
 function makeGameWindowDraggable(handle, gameWindow) {
@@ -278,9 +307,9 @@ function makeFloatingButtonDraggable(button) {
         if (Math.hypot(event.clientX - drag.startX, event.clientY - drag.startY) > 6) drag.moved = true;
         if (!drag.moved) return;
 
-        const size = button.offsetWidth || 48;
-        const left = Math.min(Math.max(8, event.clientX - drag.offsetX), window.innerWidth - size - 8);
-        const top = Math.min(Math.max(8, event.clientY - drag.offsetY), window.innerHeight - size - 8);
+        const bounds = getFloatingBounds(button);
+        const left = Math.min(Math.max(bounds.minLeft, event.clientX - drag.offsetX), bounds.maxLeft);
+        const top = Math.min(Math.max(bounds.minTop, event.clientY - drag.offsetY), bounds.maxTop);
         button.style.setProperty('left', `${left}px`, 'important');
         button.style.setProperty('top', `${top}px`, 'important');
         button.style.setProperty('right', 'auto', 'important');
@@ -292,9 +321,10 @@ function makeFloatingButtonDraggable(button) {
         if (drag.moved) {
             button.dataset.dragged = 'true';
             const rect = button.getBoundingClientRect();
+            const bounds = getFloatingBounds(button);
             settings.floatingPosition = {
-                x: rect.left / Math.max(1, window.innerWidth - rect.width),
-                y: rect.top / Math.max(1, window.innerHeight - rect.height),
+                x: (rect.left - bounds.minLeft) / Math.max(1, bounds.maxLeft - bounds.minLeft),
+                y: (rect.top - bounds.minTop) / Math.max(1, bounds.maxTop - bounds.minTop),
             };
             saveSettings();
         }
@@ -310,18 +340,25 @@ function placeFloatingButton() {
     button.style.setProperty('visibility', 'visible', 'important');
     button.style.setProperty('opacity', '1', 'important');
     button.style.setProperty('pointer-events', 'auto', 'important');
+    if (!settings.showFloatingButton) return;
+
+    const bounds = getFloatingBounds(button);
     const position = settings.floatingPosition;
     if (!position || !Number.isFinite(position.x) || !Number.isFinite(position.y)) {
-        button.style.setProperty('left', 'auto', 'important');
-        button.style.setProperty('top', 'auto', 'important');
-        button.style.setProperty('right', '16px', 'important');
-        button.style.setProperty('bottom', '96px', 'important');
+        const viewport = getVisibleViewport();
+        const defaultLeft = Math.max(bounds.minLeft, bounds.maxLeft - 8);
+        const defaultTop = Math.min(bounds.maxTop, Math.max(bounds.minTop, viewport.top + viewport.height - bounds.height - 96));
+        button.style.setProperty('left', `${defaultLeft}px`, 'important');
+        button.style.setProperty('top', `${defaultTop}px`, 'important');
+        button.style.setProperty('right', 'auto', 'important');
+        button.style.setProperty('bottom', 'auto', 'important');
         return;
     }
 
-    const size = button.offsetWidth || 48;
-    const left = Math.min(Math.max(8, position.x * (window.innerWidth - size)), window.innerWidth - size - 8);
-    const top = Math.min(Math.max(8, position.y * (window.innerHeight - size)), window.innerHeight - size - 8);
+    const normalizedX = Math.min(1, Math.max(0, position.x));
+    const normalizedY = Math.min(1, Math.max(0, position.y));
+    const left = bounds.minLeft + normalizedX * (bounds.maxLeft - bounds.minLeft);
+    const top = bounds.minTop + normalizedY * (bounds.maxTop - bounds.minTop);
     button.style.setProperty('left', `${left}px`, 'important');
     button.style.setProperty('top', `${top}px`, 'important');
     button.style.setProperty('right', 'auto', 'important');
