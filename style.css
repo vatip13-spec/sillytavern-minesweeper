@@ -39,30 +39,47 @@
 }
 
 #stcm-floating-button {
-    position: fixed;
-    right: 16px;
-    bottom: 96px;
-    z-index: 5100;
-    width: 24px;
-    height: 24px;
-    padding: 0;
-    border: 1px outset var(--stcm-light);
-    border-right-color: var(--stcm-dark);
-    border-bottom-color: var(--stcm-dark);
-    border-radius: 4px;
-    background: var(--stcm-background);
-    color: var(--stcm-text);
-    font-size: 13px;
-    line-height: 1;
-    box-shadow: 0 3px 10px rgb(0 0 0 / 30%);
-    cursor: grab;
-    user-select: none;
-    touch-action: none;
+    all: initial !important;
+    position: fixed !important;
+    right: 16px !important;
+    bottom: 96px !important;
+    z-index: 2147483000 !important;
+    display: flex !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    box-sizing: border-box !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 24px !important;
+    min-width: 24px !important;
+    max-width: 24px !important;
+    height: 24px !important;
+    min-height: 24px !important;
+    max-height: 24px !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    border: 1px outset var(--stcm-light) !important;
+    border-right-color: var(--stcm-dark) !important;
+    border-bottom-color: var(--stcm-dark) !important;
+    border-radius: 4px !important;
+    background: var(--stcm-background) !important;
+    color: var(--stcm-text) !important;
+    font: 13px/1 Arial, Helvetica, sans-serif !important;
+    text-align: center !important;
+    text-decoration: none !important;
+    text-shadow: none !important;
+    box-shadow: 0 3px 10px rgb(0 0 0 / 30%) !important;
+    transform: none !important;
+    filter: none !important;
+    cursor: grab !important;
+    user-select: none !important;
+    touch-action: none !important;
+    pointer-events: auto !important;
 }
 
 #stcm-floating-button:active {
-    cursor: grabbing;
-    border-style: inset;
+    cursor: grabbing !important;
+    border-style: inset !important;
 }
 
 #stcm-window {
@@ -381,9 +398,13 @@
 
 @media (pointer: coarse), (max-width: 700px) {
     #stcm-floating-button {
-        width: 24px;
-        height: 24px;
-        font-size: 13px;
+        width: 24px !important;
+        min-width: 24px !important;
+        max-width: 24px !important;
+        height: 24px !important;
+        min-height: 24px !important;
+        max-height: 24px !important;
+        font-size: 13px !important;
     }
 
     #stcm-window {

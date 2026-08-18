@@ -138,7 +138,7 @@ function createUi() {
     const root = document.createElement('div');
     root.id = 'stcm-root';
     root.innerHTML = `
-        <button id="stcm-floating-button" type="button" aria-label="지뢰찾기 열기" title="지뢰찾기 열기">💣</button>
+        <div id="stcm-floating-button" role="button" tabindex="0" aria-label="지뢰찾기 열기" title="지뢰찾기 열기">💣</div>
         <section id="stcm-window" role="dialog" aria-modal="false" aria-label="클래식 지뢰찾기" hidden>
             <div class="stcm-titlebar">
                 <span class="stcm-titlebar-icon" aria-hidden="true">💣</span>
@@ -166,12 +166,18 @@ function createUi() {
         </section>`;
     document.body.append(root);
 
-    root.querySelector('#stcm-floating-button').addEventListener('click', event => {
+    const floatingButton = root.querySelector('#stcm-floating-button');
+    floatingButton.addEventListener('click', event => {
         if (event.currentTarget.dataset.dragged === 'true') {
             event.currentTarget.dataset.dragged = 'false';
             return;
         }
         togglePanel();
+    });
+    floatingButton.addEventListener('keydown', event => {
+        if (event.key !== 'Enter' && event.key !== ' ') return;
+        event.preventDefault();
+        floatingButton.click();
     });
     root.querySelector('#stcm-close').addEventListener('click', closePanel);
     root.querySelector('#stcm-face').addEventListener('click', () => startNewGame(settings.difficulty));
@@ -190,7 +196,7 @@ function createUi() {
     board.addEventListener('pointercancel', cancelLongPress);
     board.addEventListener('pointerleave', cancelLongPress);
 
-    makeFloatingButtonDraggable(root.querySelector('#stcm-floating-button'));
+    makeFloatingButtonDraggable(floatingButton);
     makeGameWindowDraggable(root.querySelector('.stcm-titlebar'), root.querySelector('#stcm-window'));
     window.addEventListener('resize', () => {
         placeFloatingButton();
@@ -275,10 +281,10 @@ function makeFloatingButtonDraggable(button) {
         const size = button.offsetWidth || 48;
         const left = Math.min(Math.max(8, event.clientX - drag.offsetX), window.innerWidth - size - 8);
         const top = Math.min(Math.max(8, event.clientY - drag.offsetY), window.innerHeight - size - 8);
-        button.style.left = `${left}px`;
-        button.style.top = `${top}px`;
-        button.style.right = 'auto';
-        button.style.bottom = 'auto';
+        button.style.setProperty('left', `${left}px`, 'important');
+        button.style.setProperty('top', `${top}px`, 'important');
+        button.style.setProperty('right', 'auto', 'important');
+        button.style.setProperty('bottom', 'auto', 'important');
     });
 
     button.addEventListener('pointerup', event => {
@@ -300,22 +306,26 @@ function placeFloatingButton() {
     const button = document.getElementById('stcm-floating-button');
     if (!button) return;
     button.hidden = !settings.showFloatingButton;
+    button.style.setProperty('display', settings.showFloatingButton ? 'flex' : 'none', 'important');
+    button.style.setProperty('visibility', 'visible', 'important');
+    button.style.setProperty('opacity', '1', 'important');
+    button.style.setProperty('pointer-events', 'auto', 'important');
     const position = settings.floatingPosition;
     if (!position || !Number.isFinite(position.x) || !Number.isFinite(position.y)) {
-        button.style.left = 'auto';
-        button.style.top = 'auto';
-        button.style.right = '16px';
-        button.style.bottom = '96px';
+        button.style.setProperty('left', 'auto', 'important');
+        button.style.setProperty('top', 'auto', 'important');
+        button.style.setProperty('right', '16px', 'important');
+        button.style.setProperty('bottom', '96px', 'important');
         return;
     }
 
     const size = button.offsetWidth || 48;
     const left = Math.min(Math.max(8, position.x * (window.innerWidth - size)), window.innerWidth - size - 8);
     const top = Math.min(Math.max(8, position.y * (window.innerHeight - size)), window.innerHeight - size - 8);
-    button.style.left = `${left}px`;
-    button.style.top = `${top}px`;
-    button.style.right = 'auto';
-    button.style.bottom = 'auto';
+    button.style.setProperty('left', `${left}px`, 'important');
+    button.style.setProperty('top', `${top}px`, 'important');
+    button.style.setProperty('right', 'auto', 'important');
+    button.style.setProperty('bottom', 'auto', 'important');
 }
 
 function openPanel() {
