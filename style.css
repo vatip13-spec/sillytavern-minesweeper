@@ -43,8 +43,8 @@
     right: 16px;
     bottom: 96px;
     z-index: 5100;
-    width: 18px;
-    height: 18px;
+    width: 24px;
+    height: 24px;
     padding: 0;
     border: 1px outset var(--stcm-light);
     border-right-color: var(--stcm-dark);
@@ -52,7 +52,7 @@
     border-radius: 4px;
     background: var(--stcm-background);
     color: var(--stcm-text);
-    font-size: 10px;
+    font-size: 13px;
     line-height: 1;
     box-shadow: 0 3px 10px rgb(0 0 0 / 30%);
     cursor: grab;
@@ -381,9 +381,9 @@
 
 @media (pointer: coarse), (max-width: 700px) {
     #stcm-floating-button {
-        width: 18px;
-        height: 18px;
-        font-size: 10px;
+        width: 24px;
+        height: 24px;
+        font-size: 13px;
     }
 
     #stcm-window {
