@@ -158,11 +158,12 @@ function createUi() {
                 <div id="stcm-board-wrap" class="stcm-board-wrap">
                     <div id="stcm-board" class="stcm-board" role="grid" aria-label="지뢰찾기 게임판"></div>
                 </div>
-                <div class="stcm-touch-controls" aria-label="모바일 조작 모드">
-                    <button type="button" data-input-mode="reveal" aria-pressed="true">칸 열기</button>
-                    <button type="button" data-input-mode="flag" aria-pressed="false">깃발</button>
-                </div>
+            <div class="stcm-touch-controls" aria-label="모바일 조작 모드">
+                <button type="button" data-input-mode="reveal" aria-pressed="true">칸 열기</button>
+                <button type="button" data-input-mode="flag" aria-pressed="false">깃발</button>
             </div>
+            <div class="stcm-chord-hint">열린 숫자를 다시 누르면 주변 칸 열기</div>
+        </div>
         </section>`;
     document.body.append(root);
 
@@ -191,6 +192,7 @@ function createUi() {
     const board = root.querySelector('#stcm-board');
     board.addEventListener('click', handleBoardClick);
     board.addEventListener('contextmenu', handleBoardContextMenu);
+    board.addEventListener('mousedown', handleBoardMouseDown);
     board.addEventListener('pointerdown', handleBoardPointerDown);
     board.addEventListener('pointerup', cancelLongPress);
     board.addEventListener('pointercancel', cancelLongPress);
@@ -501,10 +503,20 @@ function handleBoardContextMenu(event) {
     performFlag(Number(cell.dataset.index));
 }
 
-function handleBoardPointerDown(event) {
-    if (event.pointerType === 'mouse' || event.button !== 0) return;
+function handleBoardMouseDown(event) {
+    if (event.buttons !== 3) return;
     const cell = cellFromEvent(event);
     if (!cell) return;
+    event.preventDefault();
+    suppressClickUntil = Date.now() + 500;
+    performChord(Number(cell.dataset.index));
+}
+
+function handleBoardPointerDown(event) {
+    const cell = cellFromEvent(event);
+    if (!cell) return;
+    if (event.pointerType === 'mouse') return;
+    if (event.button !== 0) return;
     longPressTriggered = false;
     const index = Number(cell.dataset.index);
     longPressTimer = window.setTimeout(() => {
@@ -525,6 +537,12 @@ function performReveal(index) {
     const before = game.status;
     if (!game.reveal(index)) return;
     if (before === GAME_STATUS.READY && game.status === GAME_STATUS.RUNNING) beginTimerIfNeeded();
+    if (game.status === GAME_STATUS.WON || game.status === GAME_STATUS.LOST) finishTimer();
+    renderAll();
+}
+
+function performChord(index) {
+    if (!game.chord(index)) return;
     if (game.status === GAME_STATUS.WON || game.status === GAME_STATUS.LOST) finishTimer();
     renderAll();
 }
@@ -577,7 +595,7 @@ function renderBoard() {
             } else if (value > 0) {
                 cell.classList.add(`number-${Math.min(value, 4)}`);
                 cell.textContent = String(value);
-                cell.setAttribute('aria-label', `주변 지뢰 ${value}개`);
+                cell.setAttribute('aria-label', `주변 지뢰 ${value}개. 다시 누르면 주변 칸 열기`);
             } else {
                 cell.setAttribute('aria-label', '빈 칸');
             }

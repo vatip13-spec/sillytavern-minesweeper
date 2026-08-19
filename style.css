@@ -311,6 +311,15 @@
     margin-top: 7px;
 }
 
+.stcm-chord-hint {
+    display: none;
+    margin-top: 5px;
+    color: var(--stcm-text);
+    font-size: 11px;
+    line-height: 1.25;
+    text-align: center;
+}
+
 #stcm-settings,
 #stcm-settings * {
     box-sizing: border-box;
@@ -429,6 +438,10 @@
 
     .stcm-touch-controls {
         display: grid;
+    }
+
+    .stcm-chord-hint {
+        display: block;
     }
 
     #stcm-settings .stcm-color-grid {
